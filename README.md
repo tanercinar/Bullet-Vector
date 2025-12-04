@@ -9,7 +9,7 @@ Oyunu tarayıcı üzerinden oynamak için tıklayın:
 
 ## Proje Hakkında
 
-Bu proje Unity Oyun Motoru ile geliştirilmiştir. Ana karakter fizik tabanlı olarak hareket eder ve ona verilen kısıtlı alanda düşmanlardan kaçarak hayatta kalmaya ve yüksek skora ulaşmaya çalışır.
+Bu proje Unity Oyun Motoru ile geliştirilmiştir. Ana karakter fizik tabanlı olarak hareket eder ve ona verilen kısıtlı alanda düşmanlardan kaçarak hayatta kalmaya çalışır.
 
 ## Kontroller
 
