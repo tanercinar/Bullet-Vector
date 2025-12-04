@@ -83,7 +83,14 @@ public class Enemy : MonoBehaviour
         }
     }
     */
-
+    //Düşmanın zıplamasını sağlayan fonksiyon
+    public void jump()
+    {
+        if (rb != null && Mathf.Abs(rb.linearVelocity.y) < 0.01f)
+        {
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        }
+    }
     //Düşmanın hasar almasını sağlayan fonksiyon
     public void takeDamage(int amount)
     {
