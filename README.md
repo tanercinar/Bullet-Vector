@@ -55,22 +55,25 @@ Oyuncu topladığı hasar güçlendirmesiyle düşmanlara verdiği hasarı kalı
 **1- Ateş Etme**
 Düşman oyuncuya zarar vermek için belirli aralıklarla mermi ateşleyebilir.
 
-**2- Çarpışma Hasarı**
+**2- Zıplama**
+Düşman fizik kurallarına uygun şekilde zıplama hareketi yapabilir.
+
+**3- Çarpışma Hasarı**
 Düşman oyuncu ile fiziksel temas kurduğunda oyuncuya hasar verir ve kendini yok eder.
 
-**3- Atılma (Dash)**
+**4- Atılma (Dash)**
 Düşman ani bir hızlanma ile bir yöne doğru atılarak oyuncuya yaklaşabilir veya saldırıdan kaçabilir.
 
-**4- Hız ve Zıplama Arttırma**
+**5- Hız ve Zıplama Arttırma**
 Düşman sahnedeki güçlendirmeleri toplayarak kısa süreliğine hareket hızını ve zıplama gücünü iki katına çıkarır.
 
-**5- Kalkan Güçlendirmesi**
+**6- Kalkan Güçlendirmesi**
 Düşman kalkan güçlendirmesi topladığında görseli değişir ve alacağı bir sonraki hasarı tamamen engeller.
 
-**6- Kalıcı Hasar Güçlendirmesi**
+**7- Kalıcı Hasar Güçlendirmesi**
 Düşman hasar güçlendirmesi toplayarak oyuncuya verdiği hasar miktarını kalıcı olarak arttırır.
 
-## Atmosfer
+## Grafik
 
 Oyun motoru içindeki üç boyutlu nesnelerle basit grafikler oluşturulmuştur.
 
