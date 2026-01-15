@@ -83,4 +83,9 @@ Oyun motoru içindeki üç boyutlu nesnelerle basit grafikler oluşturulmuştur.
 * **Ateş Sesi:** Her atışta çalan ve silahın gücünü hissettiren ses efekti.
 
 ## Yapay Zeka
-Oyunda şu an bir yapay zeka bulunmamaktadır, bir atış poligonu gibi çalışmaktadır. Daha sonra oyuncuyu zorlayacak bir yapay zeka eklenecektir.
+
+Bu projede düşmanlar, Q-Learning algoritması kullanılarak eğitilmektedir.
+
+*   **Öğrenme Süreci:** Düşmanlar başlangıçta tamamen rastgele aksiyonlar alarak çevrelerini keşfederler. Zamanla, ödül (oyuncuyu vurma, öldürme) ve ceza (boşa ateş etme, hasar alma) mekanizmaları sayesinde en etkili stratejileri öğrenirler.
+*   **Agresiflik ve Overfit:** Eğitim sonucunda düşmanların ateş etme  eylemine aşırı uyum sağladığı  ve son derece agresifleştiği gözlemlenmiştir. Eğitimini tamamlamış bir düşman, oyuncuyu gördüğü anda tereddüt etmeden ve yüksek sıklıkla ateş ederek baskı kurar. Öğrenmemiş düşmanlar rastgele hareket ederken, eğitilmiş düşmanlar ölümcül birer nişancıya dönüşür.
+*   **Eksikler:** Düşmanlar ateş etmeyi iyi düzeyde öğrenmiş olsa da gereksiz zıplama ve atılma yapma gibi durumların önüne geçilememiştir.
