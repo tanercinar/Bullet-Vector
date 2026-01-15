@@ -127,6 +127,8 @@ public class Player : MonoBehaviour
     //Oyuncunun hasar almasını sağlayan fonksiyon
     public void takeDamage(int damage)
     {
+
+        
         //Eğer kalkan açıksa:
         if (isShielded)
         {

@@ -31,6 +31,7 @@ public class PowerUps : MonoBehaviour
         {
             //Düşmansa nesneden Enemy scriptini al
             Enemy enemy = other.GetComponent<Enemy>();
+            EnemyAI ai = other.GetComponent<EnemyAI>();
             if (enemy != null)
             {
                 //Değişkenin değerine göre düşmandan gerekli fonksiyonu çağır

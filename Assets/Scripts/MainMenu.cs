@@ -12,11 +12,41 @@ public class MainMenu : MonoBehaviour
     //Ses efektlerini ayarlayan slider
     public Slider sfxSlider;
 
+    //AI Ayarlari
+    [Header("AI Ayarları")]
+    public Toggle aiToggle;
+    public Text aiStatusText;
+
+    //AI Tercihi (UI Toggle tarafindan cagrilir)
+    public void SetAIUsage(bool useTrained)
+    {
+        Debug.Log("AI Loading setting: " + useTrained);
+        //1 = True (Eğitilmişi Yükle), 0 = False (Rastgele)
+        PlayerPrefs.SetInt("UseTrainedAI", useTrained ? 1 : 0);
+        
+        UpdateAIStatusText(useTrained);
+    }
+
+    void UpdateAIStatusText(bool isActive)
+    {
+        if (aiStatusText != null)
+        {
+            aiStatusText.text = isActive ? "Yapay Zeka Aktif Edildi" : "Yapay Zeka Deaktif Edildi";
+            
+            // Metin rengini de duruma göre değiştirebiliriz (Opsiyonel ama şık)
+            aiStatusText.color = isActive ? Color.green : Color.red;
+        }
+    }
+
     void Start()
     {
         //Daha önceden ayarlanan bir ayar varsa onu al yoksa 0.5 olarak ayarla
         float savedMusicVal = PlayerPrefs.GetFloat("MusicSetting", 0.5f);
         float savedSFXVal = PlayerPrefs.GetFloat("SFXSetting", 0.5f);
+        
+        // AI baslangic ayari (Varsayilan 0 = False)
+        int savedAIVal = PlayerPrefs.GetInt("UseTrainedAI", 0);
+        
         //Sliderları ayarla
         if (musicSlider != null)
         {
@@ -26,6 +56,14 @@ public class MainMenu : MonoBehaviour
         {
             sfxSlider.value = savedSFXVal;
         }
+        
+        // AI Toggle ve Text ayarla
+        if (aiToggle != null)
+        {
+            aiToggle.isOn = (savedAIVal == 1);
+        }
+        UpdateAIStatusText(savedAIVal == 1);
+
         //Mikserin ses seviyesini ayarla
         SetMusicVolume(savedMusicVal);
         SetSFXVolume(savedSFXVal);
@@ -34,8 +72,13 @@ public class MainMenu : MonoBehaviour
     //START butonuna basınca test sahnesini yükle
     public void StartGame()
     {
+        // Önemli: Yeni oyuna başlarken QBrain'in static hafızasını temizle
+        // Böylece yeni mod (Eğitim/Savaş) seçimi geçerli olur.
+        QBrain.ResetStatics();
+        
         SceneManager.LoadScene("TestLevel");
     }
+
     //Müzik sliderı değiştiğinde çalışır
     public void SetMusicVolume(float volume)
     {

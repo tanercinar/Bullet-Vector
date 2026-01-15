@@ -3,195 +3,185 @@ using System.Collections;
 
 public class Enemy : MonoBehaviour
 {
-    //Gerekli değişkenlerin tanımlanması
+    [Header("Temel Ayarlar")]
     public int health = 3;
     public float moveSpeed = 3f;
     public float jumpForce = 5f;
     public int damage = 1;
+    public bool isBulletNearby = false;
+    public bool isDashing = false;
+
+    [Header("Yetenek Ayarları")]
     public float dashSpeed = 15f;
     public float dashDuration = 0.2f;
     public GameObject enemyBulletPrefab;
     public Transform firePoint;
 
+    [Header("Görsel Ayarlar")]
     public Material defaultMat;
     public Material shieldMat;
     private Renderer rend;
     private bool isShielded = false;
     private Rigidbody rb;
+    private EnemyAI brain;
 
-    public float stopDistance = 5f;
-    public float fireRate = 1.5f;
-    private Transform playerTarget;
-    private float nextFireTime;
+    private bool shouldMove = false;
+    private Vector3 currentTargetPos;
 
     void Start()
     {
         rend = GetComponent<Renderer>();
         rb = GetComponent<Rigidbody>();
-        
-        //Varsayılan materyal ve renderer boş değil ise:
-        if (defaultMat == null && rend != null)
-        {
-            //defaultMat değişkenini o andaki materyal olarak ayarla
+        brain = GetComponent<EnemyAI>();
+
+        if (defaultMat == null && rend != null) 
             defaultMat = rend.material;
-        }
 
-        /*
-        //Oyuncuyu bul
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null)
+        if (rb != null)
         {
-            playerTarget = playerObj.transform;
+            rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         }
-        */
     }
 
-    /*
-    void Update()
+    void FixedUpdate()
     {
-        if (playerTarget != null)
+        if (shouldMove && !isDashing)
         {
-            //Oyuncuya Dön
-            Vector3 direction = playerTarget.position - transform.position;
-            direction.y = 0;
-            Quaternion lookRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
-
-            float distance = Vector3.Distance(transform.position, playerTarget.position);
-
-            //Oyuncuyla aradaki mesafe durulması istenen mesafeden büyükse oyuncuya doğru yürü
-            if (distance > stopDistance)
-            {
-                //Hareket vektörünü hesaplama
-                Vector3 moveDir = transform.forward * moveSpeed;
-                //y eksenindeki zıplama veya düşme anındaki hızı koru
-                moveDir.y = rb.linearVelocity.y;
-                //Rigidbody componetine hızı uygula
-                rb.linearVelocity = moveDir;
-            }
-            else
-            {
-                //Dur
-                rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
-            }
-
-            if (Time.time > nextFireTime)
-            {
-                Shoot();
-                nextFireTime = Time.time + fireRate;
-            }
+            Vector3 moveDir = transform.forward * moveSpeed;
+            moveDir.y = rb.linearVelocity.y;
+            rb.linearVelocity = moveDir;
+        }
+        else if (!isDashing)
+        {
+            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
         }
     }
-    */
-    //Düşmanın zıplamasını sağlayan fonksiyon
-    public void jump()
+
+    public void SetMoveTarget(Vector3 target)
+    {
+        currentTargetPos = target;
+        shouldMove = true;
+    }
+
+    public void StopMoving(Vector3 targetToLookAt)
+    {
+        currentTargetPos = targetToLookAt;
+        shouldMove = false;
+    }
+
+    public void Jump()
     {
         if (rb != null && Mathf.Abs(rb.linearVelocity.y) < 0.01f)
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
     }
-    //Düşmanın hasar almasını sağlayan fonksiyon
+
+    public void Shoot(Quaternion? overrideRotation = null)
+    {
+        if (enemyBulletPrefab != null && firePoint != null)
+        {
+            Quaternion bulletRot = overrideRotation.HasValue ? overrideRotation.Value : firePoint.rotation;
+            GameObject bullet = Instantiate(enemyBulletPrefab, firePoint.position, bulletRot);
+            EnemyBullet bScript = bullet.GetComponent<EnemyBullet>();
+            if (bScript != null)
+            {
+                bScript.bulletDamage = damage;
+                bScript.ownerAI = brain;
+            }
+        }
+    }
+
     public void takeDamage(int amount)
     {
-        //Eğer kalkan açıksa:
+        if (brain != null) 
+            brain.OnTakeDamage();
+
         if (isShielded)
         {
-            //Kalkanı kapat ve materyali eski haline getir
             isShielded = false;
             if (rend != null) rend.material = defaultMat;
         }
-        //Kalkan kapalıysa düşmanın canını hasar değeri kadar azalt
         else
         {
             health -= amount;
         }
 
-        if (health <= 0)
-        {
-            die();
-        }
+        if (health <= 0) die();
     }
-    //Nesneyi yok eden fonksiyon
+
     public void die()
     {
+        if (brain != null) 
+            brain.OnDie();
         Destroy(gameObject);
     }
 
     void OnCollisionEnter(Collision collision)
     {
-        //Eğer çarpışılan nesne Oyuncu ise:
         if (collision.gameObject.CompareTag("Player"))
         {
-            //Oyuncudan Player scriptini al
             Player player = collision.gameObject.GetComponent<Player>();
             if (player != null)
             {
-                //Oyuncunun hasar almasını sağlayan fonksiyonu çağır
                 player.takeDamage(damage);
+                if (brain != null) 
+                    brain.OnKillTarget();
             }
             die();
         }
     }
 
-    //Hız güçlendirmesi fonksiyonu
-    public void ActivateBoost()
-    {
-        StartCoroutine(BoostRoutine());
+    public void ActivateBoost() 
+    { 
+        StartCoroutine(BoostRoutine()); 
     }
-
-    //Kalkan güçlendirmesi fonksiyonu
-    public void ActivateShield()
-    {
-        //Kalkanı aktive et ve materyali değiştir
-        isShielded = true;
-        if (rend != null) rend.material = shieldMat;
+    
+    public void ActivateShield() 
+    { 
+        isShielded = true; 
+        if (rend != null) rend.material = shieldMat; 
     }
-
-    //Hasar arttırma güçlendirmesi fonksiyonu
-    public void IncreaseDamage()
-    {
-        //Mermiye aktarılan hasar değerini bir arttır
-        damage += 1;
+    
+    public void IncreaseDamage() 
+    { 
+        damage += 1; 
     }
 
     IEnumerator BoostRoutine()
     {
-        //Hız ve zıplama gücünü iki katına çıkart
-        moveSpeed *= 2;
+        moveSpeed *= 2; 
         jumpForce *= 2;
         yield return new WaitForSeconds(5f);
-        //Süre bitince tekrar ikiye böl
-        moveSpeed /= 2;
+        moveSpeed /= 2; 
         jumpForce /= 2;
     }
 
-    public void Dash()
+    public void Dash(Vector3 direction)
     {
-        StartCoroutine(DashRoutine());
-    }
-
-    IEnumerator DashRoutine()
-    {
-        if (rb != null)
+        if (!isDashing)
         {
-            //Rigidbodye atılma etkisini uygula
-            rb.linearVelocity = transform.forward * dashSpeed;
-            //Atılma süresince bekle
-            yield return new WaitForSeconds(dashDuration);
+            StartCoroutine(DashRoutine(direction));
         }
     }
 
-    //Ateş etme fonksiyonu
-    public void Shoot()
+    IEnumerator DashRoutine(Vector3 direction)
     {
-        //Mermi prefabi ve ateş edilecek nokta değişkenleri boş değil ise:
-        if (enemyBulletPrefab != null && firePoint != null)
+        isDashing = true;
+        
+        Vector3 finalDir = direction.sqrMagnitude > 0.1f ? direction : transform.forward;
+        
+        float elapsed = 0f;
+        while (elapsed < dashDuration)
         {
-            //firePoint noktasında bir Bullet prefab'i oluştur
-            GameObject bullet = Instantiate(enemyBulletPrefab, firePoint.position, firePoint.rotation);
-            //Oluşturulan prefabin hassar değerini düşmandaki değer olarak değiştir(Hasar arttırma güçlendirmesinin çalışması için gerekli)
-            bullet.GetComponent<EnemyBullet>().bulletDamage = damage;
+            Vector3 v = finalDir.normalized * dashSpeed;
+            v.y = rb.linearVelocity.y; 
+            rb.linearVelocity = v;
+            
+            elapsed += Time.fixedDeltaTime;
+            yield return new WaitForFixedUpdate();
         }
+        
+        isDashing = false;
     }
 }
